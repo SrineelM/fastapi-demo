@@ -1,0 +1,676 @@
+{
+	"info": {
+		"_postman_id": "fastapi-guide-2025",
+		"name": "FastAPI Comprehensive Guide",
+		"description": "Complete API collection demonstrating all features of the FastAPI Comprehensive Guide project including CRUD operations, WebSocket, SSE, streaming, and advanced patterns.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "fastapi-guide"
+	},
+	"item": [
+		{
+			"name": "Health & Monitoring",
+			"item": [
+				{
+					"name": "Basic Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/health",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "health"]
+						},
+						"description": "Basic health check endpoint returning application status"
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/health/detailed",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "health", "detailed"]
+						},
+						"description": "Detailed health check with component status"
+					},
+					"response": []
+				},
+				{
+					"name": "Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/metrics",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "metrics"]
+						},
+						"description": "Application metrics including database and cache stats"
+					},
+					"response": []
+				},
+				{
+					"name": "Readiness Probe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/ready",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "ready"]
+						},
+						"description": "Kubernetes readiness probe"
+					},
+					"response": []
+				},
+				{
+					"name": "Liveness Probe",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/live",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "live"]
+						},
+						"description": "Kubernetes liveness probe"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users - CRUD Operations",
+			"item": [
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has user ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.environment.set(\"user_id\", jsonData.id);",
+									"});",
+									"",
+									"pm.test(\"User email matches\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.email).to.eql(\"john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"age\": 30,\n  \"role\": \"user\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users"]
+						},
+						"description": "Create a new user with email and password"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Get user by ID (path parameter)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('users');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('page');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users?page=1&page_size=10&role=user&is_active=true",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "Items per page"
+								},
+								{
+									"key": "role",
+									"value": "user",
+									"description": "Filter by role"
+								},
+								{
+									"key": "is_active",
+									"value": "true",
+									"description": "Filter by active status"
+								}
+							]
+						},
+						"description": "List users with pagination and filters (query parameters)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (Full)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"password\": \"NewSecurePass123!\",\n  \"age\": 31,\n  \"role\": \"admin\",\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Full update of user (PUT - all fields required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (Partial)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"age\": 32\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Partial update of user (PATCH - only changed fields)"
+					},
+					"response": []
+				},
+				{
+					"name": "Check User Exists (HEAD)",
+					"request": {
+						"method": "HEAD",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Check if user exists (HEAD - returns headers only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Allowed Methods (OPTIONS)",
+					"request": {
+						"method": "OPTIONS",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Get allowed HTTP methods (OPTIONS)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "{{user_id}}"]
+						},
+						"description": "Delete user by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products - CRUD Operations",
+			"item": [
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"product_id\", jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Laptop Pro 15\",\n  \"description\": \"High-performance laptop with 16GB RAM\",\n  \"price\": 1299.99,\n  \"stock\": 50,\n  \"category\": \"Electronics\",\n  \"is_available\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products"]
+						},
+						"description": "Create a new product"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "{{product_id}}"]
+						},
+						"description": "Get product by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products?category=Electronics&min_price=100&max_price=2000",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Electronics"
+								},
+								{
+									"key": "min_price",
+									"value": "100"
+								},
+								{
+									"key": "max_price",
+									"value": "2000"
+								}
+							]
+						},
+						"description": "List products with filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 1199.99,\n  \"stock\": 45\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "{{product_id}}"]
+						},
+						"description": "Update product details"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "{{product_id}}"]
+						},
+						"description": "Delete product"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Advanced Patterns",
+			"item": [
+				{
+					"name": "Async Operation Demo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/async-demo",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "async-demo"]
+						},
+						"description": "Demonstrates non-blocking async operation"
+					},
+					"response": []
+				},
+				{
+					"name": "Blocking Operation Demo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/blocking-demo",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "blocking-demo"]
+						},
+						"description": "Demonstrates blocking operation in thread pool"
+					},
+					"response": []
+				},
+				{
+					"name": "CPU Intensive Operation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"iterations\": 1000000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/cpu-intensive",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "cpu-intensive"]
+						},
+						"description": "Demonstrates CPU-intensive operation in process pool"
+					},
+					"response": []
+				},
+				{
+					"name": "Server-Sent Events (SSE)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/sse/stream",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "sse", "stream"]
+						},
+						"description": "Server-Sent Events stream (time updates)"
+					},
+					"response": []
+				},
+				{
+					"name": "Stream Large Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stream/data?size=1000",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "stream", "data"],
+							"query": [
+								{
+									"key": "size",
+									"value": "1000"
+								}
+							]
+						},
+						"description": "Stream large dataset"
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"event_type\": \"user.created\",\n  \"data\": {\n    \"user_id\": 123,\n    \"username\": \"john_doe\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/events/publish",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "events", "publish"]
+						},
+						"description": "Publish event to event bus"
+					},
+					"response": []
+				},
+				{
+					"name": "Subscribe to Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"event_type\": \"user.created\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/events/subscribe",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "events", "subscribe"]
+						},
+						"description": "Subscribe to event type"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data Processing",
+			"item": [
+				{
+					"name": "Numerical Analysis",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"values\": [1.5, 2.7, 3.2, 4.8, 5.1, 6.3, 7.9, 8.2, 9.5, 10.1]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/analyze/numerical",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "analyze", "numerical"]
+						},
+						"description": "Analyze numerical data with NumPy"
+					},
+					"response": []
+				},
+				{
+					"name": "DataFrame Processing",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"data\": [\n    {\"name\": \"Alice\", \"age\": 30, \"score\": 85.5},\n    {\"name\": \"Bob\", \"age\": 25, \"score\": 92.3},\n    {\"name\": \"Charlie\", \"age\": 35, \"score\": 78.9}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/analyze/dataframe",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "analyze", "dataframe"]
+						},
+						"description": "Process DataFrame with Pandas"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "SecurePass123!",
+    "age": 30,
+    "role": "user",
+    "is_active": true
+  },
+  {
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "password": "SecurePass456!",
+    "age": 28,
+    "role": "user",
+    "is_active": true
+  },
+  {
+    "name": "Admin User",
+    "email": "admin@example.com",
+    "password": "AdminPass789!",
+    "age": 35,
+    "role": "admin",
+    "is_active": true
+  },
+  {
+    "name": "Bob Johnson",
+    "email": "bob.johnson@example.com",
+    "password": "BobPass123!",
+    "age": 42,
+    "role": "user",
+    "is_active": false
+  },
+  {
+    "name": "Alice Williams",
+    "email": "alice.williams@example.com",
+    "password": "AlicePass456!",
+    "age": 25,
+    "role": "user",
+    "is_active": true
+  },
+  {
+    "name": "Charlie Brown",
+    "email": "charlie.brown@example.com",
+    "password": "CharliePass789!",
+    "age": 33,
+    "role": "moderator",
+    "is_active": true
+  },
+  {
+    "name": "Diana Prince",
+    "email": "diana.prince@example.com",
+    "password": "DianaPass123!",
+    "age": 29,
+    "role": "admin",
+    "is_active": true
+  },
+  {
+    "name": "Eve Anderson",
+    "email": "eve.anderson@example.com",
+    "password": "EvePass456!",
+    "age": 31,
+    "role": "user",
+    "is_active": true
+  },
+  {
+    "name": "Frank Miller",
+    "email": "frank.miller@example.com",
+    "password": "FrankPass789!",
+    "age": 45,
+    "role": "user",
+    "is_active": false
+  },
+  {
+    "name": "Grace Lee",
+    "email": "grace.lee@example.com",
+    "password": "GracePass123!",
+    "age": 27,
+    "role": "moderator",
+    "is_active": true
+  }
+]

@@ -1,0 +1,190 @@
+# Kubernetes Deployment for FastAPI application
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-guide
+  namespace: default
+  labels:
+    app: fastapi-guide
+    version: v1
+spec:
+  replicas: 3  # Number of pod replicas
+  selector:
+    matchLabels:
+      app: fastapi-guide
+  template:
+    metadata:
+      labels:
+        app: fastapi-guide
+        version: v1
+    spec:
+      containers:
+      - name: fastapi
+        image: fastapi-guide:latest  # Replace with your image
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DEBUG
+          value: "False"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: WORKERS
+          value: "4"
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: fastapi-secrets
+              key: secret-key
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            cpu: "500m"      # 0.5 CPU cores
+            memory: "512Mi"  # 512 MB RAM
+          limits:
+            cpu: "1000m"     # 1 CPU core
+            memory: "1Gi"    # 1 GB RAM
+        livenessProbe:
+          httpGet:
+            path: /api/v1/live
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+# Kubernetes Service for FastAPI application
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: default
+  labels:
+    app: fastapi-guide
+spec:
+  type: LoadBalancer  # Use ClusterIP for internal, LoadBalancer for external
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: fastapi-guide
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fastapi-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fastapi-guide
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-config
+  namespace: default
+data:
+  APP_NAME: "FastAPI Comprehensive Guide"
+  APP_VERSION: "1.0.0"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  CACHE_TTL: "300"
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fastapi-secrets
+  namespace: default
+type: Opaque
+stringData:
+  secret-key: "change-this-to-a-secure-random-key-in-production"
+---
+# Redis Deployment (for caching)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
